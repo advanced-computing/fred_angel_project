@@ -6,5 +6,5 @@ This API provides a user-friendly display of the total population for the years 
 
 Given that the database is somewhat large, we appreciate your patience when loading and visualizing tables, charts, and especially maps.
 
-## Sugerencias
+## Suggestions
 For any suggestions or inquiries, please feel free to contact us at the following email addresses: ftl2110@columbia.edu or jr4252@columbia.edu.
