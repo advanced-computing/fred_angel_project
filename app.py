@@ -16,7 +16,7 @@ def load_data():
     if response.status_code == 200:
         data = pd.read_csv(StringIO(response.text), encoding="ISO-8859-1", skiprows=1, header=0)
         # Rename columns for clarity
-        data = data.rename(columns={"Region/Country/Area": "Region Code", "Unnamed: 1": "Region"})
+        data = data.rename(columns={"Region/Country/Area": "Region Code", "Unnamed: 1": "Country"})
         return data
     else:
         print("Error loading the CSV file from GitHub")
