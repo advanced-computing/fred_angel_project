@@ -1,49 +1,72 @@
-from flask import Flask, jsonify, Response
+from flask import Flask, jsonify, request, Response
 import pandas as pd
 import requests
-import json
-from io import StringIO
+import io
 
 app = Flask(__name__)
 
-# URL del archivo CSV en GitHub en formato RAW
+# Load CSV from GitHub
 CSV_URL = "https://raw.githubusercontent.com/advanced-computing/fred_angel_project/main/un_data.csv"
-
 
 def load_data():
     '''
- Load and format CSV into a Pandas dataframe
-     '''
-        
+    Loading in the data, 
+    '''
     response = requests.get(CSV_URL)
-    data = pd.read_csv(StringIO(response.text), encoding="ISO-8859-1", skiprows=1, header=0)
+    df = pd.read_csv(io.StringIO(response.text), encoding='latin1')
 
-    # Rename columns for clarity
-    data = data.rename(columns={
-            "Region/Country/Area": "Region Code", "Unnamed: 1": "Region"})
+    df = df.rename(columns={
+        "T02": "Region_ID",
+        "Population, density and surface area": "Country_Area",
+        "Unnamed: 2": "Year",
+        "Unnamed: 3": "Series",
+        "Unnamed: 4": "Value",
+        "Unnamed: 5": "Footnotes",
+        "Unnamed: 6": "Source"
+    }).iloc[1:].reset_index(drop=True)
+    
+    return df
 
-    return data
+df = load_data()
 
-# Cargar los datos con Pandas desde GitHub
-response = requests.get(CSV_URL)
-
-if response.status_code == 200:
-    df = pd.read_csv(StringIO(response.text), encoding="latin1")
-else:
-    df = pd.DataFrame()  # Crea un DataFrame vacío si hay error
-    print("Error al cargar el archivo CSV desde GitHub")
-
-@app.route('/')
+@app.route("/")
 def home():
-    return "Flask API funcionando. Ve a /data para ver el CSV en formato JSON."
+    return "<p>Hi soy Angel, Fujimori para siempre.</p>"
 
-@app.route('/data', methods=['GET'])
-def get_data():
-    """ Devuelve los datos del CSV en formato JSON con indentación """
-    if df.empty:
-        return "No me culpa, fue Angel"
+@app.route("/records", methods=["GET"])
+def list_records():
+    """
+    Displays a list of the UN data records. This function 
+        can change pagination using limit and output parameters. It can change 
+        the file format from json to csv as well using output_format parameter.
+    """
+    limit = request.args.get("limit", default=10, type=int)
+    offset = request.args.get("offset", default=0, type=int)
+    output_format = request.args.get("format", default="json")
 
-    return df.to_json(orient="records")
+    # Apply filtering using a loop instead of list comprehension
+    filtered_df = df.copy()
+    for key, value in request.args.items():
+        if key in df.columns and key not in ["limit", "offset", "format"]:
+            filtered_df = filtered_df[filtered_df[key] == value]
 
-if __name__ == '__main__':
+    paginated_df = filtered_df.iloc[offset:offset + limit]
+
+    if output_format == "csv":
+        return Response(paginated_df.to_csv(index=False), mimetype="text/csv", headers={"Content-Disposition": "attachment; filename=records.csv"})
+
+    return jsonify(paginated_df.to_dict(orient="records"))
+
+@app.route("/records/<region_id>/<year>", methods=["GET"])
+def get_record(region_id, year):
+    """
+    Retrieve a single record by Region_ID and Year. There is no unique identifier, so
+        a composite key is used instead. No country/year combo occurs twice, but multiple
+        rows of data are stored for each country/year (similar to a pivot table).
+    """
+    record = df[(df["Region_ID"] == region_id) & (df["Year"] == year)]
+
+    return jsonify(record.iloc[0].to_dict()) if not record.empty else jsonify({"no record: "}), 404
+
+if __name__ == "__main__":
     app.run(debug=True)
