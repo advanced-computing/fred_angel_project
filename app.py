@@ -9,6 +9,21 @@ app = Flask(__name__)
 # URL del archivo CSV en GitHub en formato RAW
 CSV_URL = "https://raw.githubusercontent.com/advanced-computing/fred_angel_project/main/un_data.csv"
 
+
+def load_data():
+    '''
+ Load and format CSV into a Pandas dataframe
+     '''
+        
+    response = requests.get(CSV_URL)
+    data = pd.read_csv(StringIO(response.text), encoding="ISO-8859-1", skiprows=1, header=0)
+
+    # Rename columns for clarity
+    data = data.rename(columns={
+            "Region/Country/Area": "Region Code", "Unnamed: 1": "Region"})
+
+    return data
+
 # Cargar los datos con Pandas desde GitHub
 response = requests.get(CSV_URL)
 
@@ -25,8 +40,10 @@ def home():
 @app.route('/data', methods=['GET'])
 def get_data():
     """ Devuelve los datos del CSV en formato JSON con indentación """
-    json_data = json.dumps(df.to_dict(orient="records"), indent=2, ensure_ascii=False)
-    return Response(json_data, mimetype='application/json')
+    if df.empty:
+        return "No me culpa, fue Angel"
+
+    return df.to_json(orient="records")
 
 if __name__ == '__main__':
     app.run(debug=True)
