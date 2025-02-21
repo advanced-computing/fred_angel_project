@@ -9,5 +9,5 @@ def continent_filter(countries: pd.Series):
     #Returns what is not in continents list (i.e. countries)
     return countries.loc[~countries.isin(continents)]
     
-
+def value_validation(values: pd.Series):
     
