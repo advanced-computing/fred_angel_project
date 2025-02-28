@@ -24,10 +24,10 @@ def test_load_data():
     assert isinstance(df, pd.DataFrame)
     assert not df.empty, "DataFrame should not be empty"
     
-### Test that filtering data by a specific column name to check filters.
+### Test that filtering data by a specific column name to check filters. American = USA
 def test_filter_by_column():
     """Test filtering data by a specific column."""
-    df = pd.DataFrame({"Country": ["USA", "Canada", "Mexico"], "Population": [300, 37, 128]})
+    df = pd.DataFrame({"Country": ["American", "Canada", "Mexico"], "Population": [300, 37, 128]})
     params = {"Country": "USA"}
     filtered_df, _ = filter_and_paginate(df, params)
     assert len(filtered_df) == 1, "Should return only rows where Country is 'USA'"
