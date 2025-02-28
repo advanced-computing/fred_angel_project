@@ -9,7 +9,6 @@ def client():
     app.config["TESTING"] = True
     with app.test_client() as client:
         yield client
-
 ### Test that checks that the home path produces the right answer.
 def test_home(client):
     """Test if the home route returns the correct response."""
@@ -28,7 +27,7 @@ def test_load_data():
 def test_filter_by_column():
     """Test filtering data by a specific column."""
     df = pd.DataFrame({"Country": ["American", "Canada", "Mexico"], "Population": [300, 37, 128]})
-    params = {"Country": "USA"}
+    params = {"Country": "American"}
     filtered_df, _ = filter_and_paginate(df, params)
     assert len(filtered_df) == 1, "Should return only rows where Country is 'USA'"
 
