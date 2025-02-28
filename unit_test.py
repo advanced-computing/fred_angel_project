@@ -47,3 +47,12 @@ def test_group_by_column():
     df = pd.DataFrame({"Category": ["A", "B", "A", "B", "C"], "Value": [1, 2, 3, 4, 5]})
     grouped_df = df.groupby("Category").size().reset_index(name="Count")
     assert grouped_df[grouped_df["Category"] == "A"]["Count"].values[0] == 2, "Category A should have 2 occurrences"
+    
+### Test that the /data website page returns a valid response.
+def test_get_data(client):
+    """Test the /data website."""
+    response = client.get("/data")
+    assert response.status_code == 200
+    assert response.is_json, "Response should be JSON"
+    json_data = response.get_json()
+    assert isinstance(json_data, list), "Data should be a list"
