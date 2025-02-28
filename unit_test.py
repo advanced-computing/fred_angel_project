@@ -40,3 +40,10 @@ def test_pagination():
     paginated_df, _ = filter_and_paginate(df, params)
     assert len(paginated_df) == 5, "Pagination should return 5 rows"
     assert paginated_df.iloc[0]["ID"] == 2, "First item should start at offset 2"
+
+    ### Test grouping data by a column and counting occurrences.
+def test_group_by_column():
+    """Test grouping data by a column and counting values."""
+    df = pd.DataFrame({"Category": ["A", "B", "A", "B", "C"], "Value": [1, 2, 3, 4, 5]})
+    grouped_df = df.groupby("Category").size().reset_index(name="Count")
+    assert grouped_df[grouped_df["Category"] == "A"]["Count"].values[0] == 2, "Category A should have 2 occurrences"
