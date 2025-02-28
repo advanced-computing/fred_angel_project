@@ -35,3 +35,4 @@ def get_data():
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)
+>>>>>>> 2138a65 (Main has been created to re-organize the app (call functions))
