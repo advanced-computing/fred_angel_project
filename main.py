@@ -2,7 +2,13 @@
 
 from flask import Flask, jsonify, Response, request
 from helper import load_data, filter_and_paginate
-import pandas as pd
+from error_handling import (
+    handle_invalid_parameters,
+    handle_invalid_filter_key,
+    handle_invalid_country,
+    handle_no_results,
+    handle_server_error
+)
 
 app = Flask(__name__)
 
@@ -25,19 +31,18 @@ def get_data():
         offset = int(request.args.get("offset", 0))
 
         if limit < 1 or offset < 0:
-            raise ValueError("Limit must be greater than 0 and offset cannot be negative.")
+            return handle_invalid_parameters()
     except ValueError:
-        return jsonify({
-            "error": "'limit' and 'offset' must be positive."}), 400
+        return handle_invalid_parameters()
     
     # Validates arguments. Essentially spellchecking    
     for key, value in request.args.items():
         if key not in df.columns and key not in ["limit", "offset", "format"]:
-            return jsonify({"error": f"Invalid filter key: '{key}' is not a valid column."}), 400
+            return handle_invalid_filter_key(key)
 
         # Check if the filter value is valid for Country
         if key == "Country" and value not in df["Country"].unique():
-            return jsonify({"error": f"Invalid country name: '{value}' is not in the dataset."}), 400
+            return handle_invalid_country(value)
 
     # Try to apply filters and pagination
     try:
@@ -45,11 +50,11 @@ def get_data():
 
         #Checking if df is empty
         if paginated_df.empty:
-            return jsonify({"error": "No data found."}), 404
+            return handle_no_results()
 
     # Generic server error check
     except Exception as e:
-        return jsonify({"error": f"An error occurred while processing data: {str(e)}"}), 500
+        return handle_server_error(e)
 
 
     # Return CSV if requested
