@@ -9,14 +9,14 @@ def client():
     app.config["TESTING"] = True
     with app.test_client() as client:
         yield client
-### Test that checks that the home path produces the right answer.
+### Test that checks that the home path produces the right answer
 def test_home(client):
     """Test if the home route returns the correct response."""
     response = client.get("/")
     assert response.status_code == 200
     assert b"Flask API is running" in response.data
 
-### Test that checks the data loads to be accurate and nonempty.
+### Test that checks the data loads to be accurate and nonempty
 def test_load_data():
     """Test if the data loads correctly."""
     df = load_data()
@@ -31,7 +31,7 @@ def test_filter_by_column():
     filtered_df, _ = filter_and_paginate(df, params)
     assert len(filtered_df) == 1, "Should return only rows where Country is 'USA'"
 
-### Test that verifies pagination works.
+### Test that verifies pagination works
 def test_pagination():
     """Test pagination functionality."""
     df = pd.DataFrame({"ID": range(10)})
@@ -40,14 +40,14 @@ def test_pagination():
     assert len(paginated_df) == 5, "Pagination should return 5 rows"
     assert paginated_df.iloc[0]["ID"] == 2, "First item should start at offset 2"
 
-    ### Test grouping data by a column and counting occurrences.
+    ### Test grouping data by a column and counting occurrences
 def test_group_by_column():
     """Test grouping data by a column and counting values."""
     df = pd.DataFrame({"Category": ["A", "B", "A", "B", "C"], "Value": [1, 2, 3, 4, 5]})
     grouped_df = df.groupby("Category").size().reset_index(name="Count")
     assert grouped_df[grouped_df["Category"] == "A"]["Count"].values[0] == 2, "Category A should have 2 occurrences"
     
-### Test that the /data website page returns a valid response.
+### Test that the /data website page returns a valid response
 def test_get_data(client):
     """Test the /data website."""
     response = client.get("/data")

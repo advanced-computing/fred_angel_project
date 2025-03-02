@@ -1,5 +1,3 @@
-# main.py
-
 from flask import Flask, jsonify, Response, request
 from helper import load_data, filter_and_paginate
 from error_handling import handle_no_results, handle_server_error
