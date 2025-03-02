@@ -9,11 +9,13 @@ def validate_limit_offset(request_args):
 
         if limit < 1 or offset < 0:
             return False, handle_invalid_parameters()
+        
+        #convert to json for flask
+        return jsonify({"limit": limit, "offset": offset}), 200
                 
-        return True, (limit, offset)  # Return valid values if they pass the check
 
     except ValueError:
-            return False, handle_invalid_parameters()
+            return handle_invalid_parameters()
         
 # Define valid API parameters explicitly
 #   Note: Could be dynamic, but since the app is simple uses list
@@ -25,7 +27,7 @@ def validate_filter_keys(request_args):
         if key not in VALID_PARAMS:
             return False, handle_invalid_filter_key(key)
         
-    return True, None  # Return True if all keys are valid
+    return jsonify({"message": "Valid parameters"}), 200  # Return True if all keys are valid
 
 
 def validate_country(request_args, valid_countries):
@@ -33,6 +35,6 @@ def validate_country(request_args, valid_countries):
     if "Country" in request_args:
         country = request_args["Country"]
         if country not in valid_countries:
-            return False, handle_invalid_country(country), 400
+            return False, handle_invalid_country(country)
         
-    return True, None, 200  # Return True if the country is valid
+    return True, jsonify({"message": "Valid country"}), 200  # Return True if the country is valid

@@ -23,18 +23,18 @@ def get_data():
 
     # Validates query parameters for offset and limit
     valid, result = validate_limit_offset(request.args)
-    if not valid:
-        return result
-    limit, offset = result
+    if isinstance(valid, tuple):
+        return valid
+    limit, offset = valid.get_json()["limit"], valid.get_json()["offset"]
     
     # Validates arguments. Essentially spellchecking    
     valid, result = validate_filter_keys(request.args)
-    if not valid:
-        return result
+    if isinstance(valid, tuple):
+        return valid
 
     # Checks if the value is valid for Country (does it exist in df)
     valid, result, status = validate_country(request.args, df["Country"].unique())
-    if not valid:
+    if isinstance(valid, tuple):
         return result
  
     # Apply filters and pagination
