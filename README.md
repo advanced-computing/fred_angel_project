@@ -28,7 +28,7 @@ To run this API locally, follow these steps:
    ```
 4. **Run the Flask app**
    ```sh
-   python app.py
+   python main.py
    ```
 
 ## Additional Documentation
