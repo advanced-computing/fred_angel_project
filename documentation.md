@@ -228,3 +228,37 @@ curl -X GET "http://127.0.0.1:5000/data?Region%20Code=1"
   }
 ]
 ```
+
+### YData Profiling and Data Quality Assessment
+
+Using **YData Profiling**, an automated data profiling tool, we guaranteed a complete knowledge of the dataset driving our API. Including descriptive statistics, data distributions, correlations, and possible data quality problems, the profiling procedure offers a whole picture of the dataset.
+
+#### Profiling Process
+- The dataset is loaded in line with our API and test scripts to preserve consistency.
+- To lower skewness while still maintaining significant fluctuations, we use **log transformation** on the Value column.
+- Zero numbers are **validated and retained** since they could point to credible claims from certain nations (e.g., no military expenditure, no reported emissions, or zero trade activity in a given sector).
+- Using **minimal mode** helps the profiling report to be produced to maximize performance and guarantee quicker processing.
+- Saved for simple access and evaluation is the final report as `data_profiling_report.html`.
+
+#### Challenges and Considerations
+- The dataset consists of **highly skewed distributions** which call for log adjustments to increase interpretability.
+- In particular, - Few items have `NaN` values, which are specifically addressed to avoid API response mistakes.
+- Some categorical columns, like `Country` and `Series`, have great cardinality and should be carefully filtered for relevant information.
+
+#### How to Generate the Profiling Report
+To generate the data profiling report, follow these steps:
+1. Ensure that all dependencies, including `ydata-profiling`, are installed:
+   ```sh
+   pip install ydata-profiling
+   ```
+2. Download and run the `data_profiling.py` script:
+   ```sh
+   python data_profiling.py
+   ```
+3. The profiling report will be generated and saved as `data_profiling_report.html` in the project directory.
+4. Open the report in a web browser for your in-depth analysis.
+
+#### Commentary about the Profiling Report
+The dataset highlights important variations in social and economic indices as well as offers an interesting analysis of world inequalities between nations. The significant skewness in the Value column implies that although most nations report modest values, several show excessive numbers that distort the distribution. Globally, developed economies often show substantially larger economic and demographic indicators—such as GDP, trade volume, or energy consumption—than smaller or less industrialized countries. The existence of nations with zero values accentuates this difference even more; for example, certain countries might have zero military expenditure, no CO₂ emissions, or no known economic output in particular industries. These are reflections of actual government economic and policy actions, not anomalies.
+
+Furthermore emphasized in the report is the variety of development routes available globally. While countries with low or zero values could be emerging markets, environmentally conscious nations, or conflict-torn areas where particular economic activities are absent, countries with high values in particular indicators could be leading global economies or highly industrialized areas. Outliers imply that some countries control important indicators, therefore affecting world averages and rendering regional comparisons indispensable in order to prevent false conclusions. Applying log transformation helps the dataset to become more interpretable, enabling better trend representation free from excessive skews. In the end, this profile activity emphasizes the complexity of world development and the need to take context and policy decisions into account while evaluating worldwide statistics.
