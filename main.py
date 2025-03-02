@@ -2,13 +2,9 @@
 
 from flask import Flask, jsonify, Response, request
 from helper import load_data, filter_and_paginate
-from error_handling import (
-    handle_invalid_parameters,
-    handle_invalid_filter_key,
-    handle_invalid_country,
-    handle_no_results,
-    handle_server_error
-)
+from error_handling import handle_no_results, handle_server_error
+from validate import validate_limit_offset, validate_filter_keys, validate_country
+
 
 app = Flask(__name__)
 
@@ -26,29 +22,26 @@ def get_data():
         return jsonify({"error": "Failed to load the CSV file"}), 500
 
     # Validates query parameters for offset and limit
-    try:
-        limit = int(request.args.get("limit", 10))
-        offset = int(request.args.get("offset", 0))
-
-        if limit < 1 or offset < 0:
-            return handle_invalid_parameters()
-    except ValueError:
-        return handle_invalid_parameters()
+    valid, result = validate_limit_offset(request.args)
+    if not valid:
+        return result
+    limit, offset = result
     
     # Validates arguments. Essentially spellchecking    
-    for key, value in request.args.items():
-        if key not in df.columns and key not in ["limit", "offset", "format"]:
-            return handle_invalid_filter_key(key)
+    valid, result = validate_filter_keys(request.args)
+    if not valid:
+        return result
 
-        # Check if the filter value is valid for Country
-        if key == "Country" and value not in df["Country"].unique():
-            return handle_invalid_country(value)
-
-    # Try to apply filters and pagination
+    # Checks if the value is valid for Country (does it exist in df)
+    valid, result, status = validate_country(request.args, df["Country"].unique())
+    if not valid:
+        return result
+ 
+    # Apply filters and pagination
     try:
         paginated_df, output_format = filter_and_paginate(df, request.args)
 
-        #Checking if df is empty
+        # Checks if df is empty after filter/paginated
         if paginated_df.empty:
             return handle_no_results()
 
