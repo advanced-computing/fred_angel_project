@@ -1,48 +1,45 @@
-# helper.py
+import duckdb
+from error_handling import handle_server_error
 
-import pandas as pd
-import requests
-from io import StringIO
+DB_PATH = "un_data.db"
+COLUMN_ORDER = ["Region_Code", "Country", "Year", "Series", "Value", "Footnotes", "Source"]
 
-# URL of the CSV file on GitHub (RAW format)
-CSV_URL = "https://raw.githubusercontent.com/advanced-computing/fred_angel_project/main/un_data.csv"
+def initialize_database():
+    conn = duckdb.connect(DB_PATH)
+    conn.close()
 
-def load_data():
-    """
-    Loads the UN data, cleans and renames columns
-    Returns a dataframe
-    """
-    response = requests.get(CSV_URL)
-    if response.status_code == 200:
-        df = pd.read_csv(StringIO(response.text), encoding="ISO-8859-1", skiprows=1, header=0)
-        # Rename columns for clarity
-        df = df.rename(columns={"Region/Country/Area": "Region Code", "Unnamed: 1": "Country"})
+def get_valid_countries():
+    try:
+        conn = duckdb.connect(DB_PATH)
+        countries = conn.execute("SELECT DISTINCT Country FROM un_data").fetchdf()["Country"].tolist()
+        conn.close()
+        return set(countries)
+    except Exception as e:
+        return handle_server_error(e)
+
+def filter_and_paginate(filters):
+    try:
+        query = f"SELECT {', '.join(COLUMN_ORDER)} FROM un_data WHERE 1=1"
+        conditions = []
+
+        if "Year" in filters:
+            conditions.append(f"AND Year = {filters['Year']}")
+        if "Country" in filters:
+            conditions.append(f"AND Country = '{filters['Country']}'")
+        if "Series" in filters:
+            conditions.append(f"AND Series LIKE '%{filters['Series']}%'")
+
+        filter_query = " ".join(conditions)
+        final_query = f"{query} {filter_query} ORDER BY {', '.join(COLUMN_ORDER)} LIMIT {filters.get('limit', 10)} OFFSET {filters.get('offset', 0)}"
+
+        conn = duckdb.connect(DB_PATH)
+        df = conn.execute(final_query).fetchdf()
+        conn.close()
+
+        if not df.empty:
+            df["Value"] = df["Value"].apply(lambda x: round(x, 1) if isinstance(x, (int, float)) else x)
+
         return df
-    else:
-        print("Error loading the CSV file from GitHub")
-        return pd.DataFrame()  # Return an empty DataFrame if there's an error
 
-def filter_and_paginate(dataframe, params):
-    """
-    Allows user to filter and paginate using parameters.
-    Parameter options: 'limit' (), 'offset', and 'format' 
-    Can pass column names as well (Need to add)
-    """
-    # Extract pagination parameters
-    limit = int(params.get("limit", 10))
-    offset = int(params.get("offset", 0))
-    output_format = params.get("format", "json")
-
-    # Build filters from remaining parameters
-    filters = {k: v for k, v in params.items() if k not in ['limit', 'offset', 'format']}
-
-    # Apply filters
-    filtered_df = dataframe
-    for key, value in filters.items():
-        if key in filtered_df.columns:
-            filtered_df = filtered_df[filtered_df[key].astype(str) == value]
-
-    # Pagination
-    paginated_df = filtered_df.iloc[offset : offset + limit]
-
-    return paginated_df, output_format
+    except Exception as e:
+        return handle_server_error(e)
