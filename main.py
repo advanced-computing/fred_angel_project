@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, Response, request
 from error_handling import handle_no_results, handle_server_error
 from validate import validate_all_filters
-from helper import initialize_database, filter_and_paginate, get_valid_countries
+from helper import initialize_database, filter_and_paginate, get_valid_countries, add_user
 
 app = Flask(__name__)
 
@@ -35,6 +35,18 @@ def get_data():
         )
 
     return jsonify(result_df.to_dict(orient="records"))
+
+@app.route('/users', methods=['POST'])
+def add_user_endpoint():
+    data = request.get_json()
+    # Validate that the required fields are provided
+    if not data or not all(k in data for k in ('username', 'age', 'country')):
+        return jsonify({'error': 'Missing required fields: username, age, country'}), 400
+
+    result = add_user(data['username'], data['age'], data['country'])
+    if "error" in result:
+        return jsonify(result), 500
+    return jsonify(result), 201
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)
