@@ -9,3 +9,8 @@ Use a function called get_latest_data(dates, cpi)
 This function will be run using a loop to simulate various uses
 
 We will compare the different methods (append, trunc, and incremental)
+
+[x] Load in data to create original database
+[] Create function get_latest_data(file,date)
+    [] parse month + year
+    [] reference correct column using regex
