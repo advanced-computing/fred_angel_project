@@ -11,6 +11,14 @@ This function will be run using a loop to simulate various uses
 We will compare the different methods (append, trunc, and incremental)
 
 [x] Load in data to create original database
-[] Create function get_latest_data(file,date)
-    [] parse month + year
-    [] reference correct column using regex
+[x] Create function get_latest_data(file,date)
+    [x] parse month + year
+    [x] reference correct column (didn't need regex)
+[] Write a function for each method of dataloading
+        Pulls up to a date parameter
+        Doesn't duplicate data (does it correctly I guess)
+    [] _append - use sql
+    [] _trunc - use sql
+    [] _inc - use python script
+[] Make a notebook to run it a bunch of times and print results (loop?)
+[] Submit
