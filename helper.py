@@ -43,3 +43,15 @@ def filter_and_paginate(filters):
 
     except Exception as e:
         return handle_server_error(e)
+    
+def add_user(username, age, country):
+    try:
+        conn = duckdb.connect(DB_PATH)
+        conn.execute(
+            "INSERT INTO users (username, age, country) VALUES (?, ?, ?)",
+            (username, age, country)
+        )
+        conn.close()
+        return {"message": "User added successfully"}
+    except Exception as e:
+        return handle_server_error(e)
